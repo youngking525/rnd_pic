@@ -1,0 +1,23 @@
+async function showNextImage() {
+    // 1. 获取 URL 里的 type 参数 (默认为 landscape)
+    const urlParams = new URLSearchParams(window.location.search);
+    const type = urlParams.get('type') || 'landscape'; 
+
+    const JSON_FILE = `./${type}.json`;
+    const STORAGE_KEY = `img_pool_${type}`; // 针对不同类型使用不同的缓存键
+
+    // 2. 从 localStorage 读取对应的“剩余清单”
+    let remaining = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+
+    if (remaining.length === 0) {
+        const response = await fetch(JSON_FILE);
+        const allImages = await response.json();
+        remaining = shuffle(allImages);
+    }
+
+    const currentImg = remaining.pop();
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(remaining));
+
+    // 3. 注意图片路径也要加上 type 文件夹
+    document.getElementById('myImage').src = `./images/${type}/${currentImg}`;
+}
